@@ -38,6 +38,8 @@ def sanity_check(maze, path):
     @return bool: whether or not the path pass the sanity check
     """
     # TODO: Write your code here
+    if maze.isValidPath(path) == "Valid":
+        return True
     return False
 
 
@@ -50,8 +52,24 @@ def bfs(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     # TODO: Write your code here
-    return []
-
+    queue = [maze.getStart()]
+    prev = {queue[0]:None}
+    end = None
+    while queue:
+        curr = queue.pop(0)
+        if maze.isObjective(curr[0], curr[1]):
+            end = curr
+            break
+        neighbors = maze.getNeighbors(curr[0], curr[1])
+        for n in neighbors:
+            if n not in prev:
+                prev[n] = curr
+                queue.append(n)
+    path = []
+    while end:
+        path = [end] + path
+        end = prev[end]
+    return path
 
 def astar(maze):
     """

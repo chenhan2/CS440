@@ -30,7 +30,8 @@ class Application:
         self.displaySurface = None
         self.scale = scale
         self.fps = fps
-        self.windowTitle = "CS440 MP1: "
+        # self.windowTitle = "CS440 MP1: "
+        self.windowTitle = "C:/Users/AW/Desktop/CS440/CODE/MP1/"
         self.__human = human
         self.alt_color = alt_color
 
