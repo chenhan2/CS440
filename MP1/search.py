@@ -83,12 +83,14 @@ def astar(maze):
     # TODO: Write your code here
     boundary = PriorityQueue()
     prev = {}
+    dist = {}
     start = maze.getStart()
     prev[start] = None
+    dist[start] = 0
     objs = maze.getObjectives()
     obj = objs[0]
     manhatten = abs(obj[0] - start[0]) + abs(obj[1] - start[1])
-    boundary.put((manhatten, start))
+    boundary.put((manhatten + 0, start))
     end = None
     while not boundary.empty():
         value, curr = boundary.get()
@@ -99,9 +101,10 @@ def astar(maze):
         for n in neighbors:
             if n in prev:
                 continue
-            manhatten = abs(obj[0] - n[0]) + abs(obj[1] - n[1])
-            boundary.put((manhatten, n))
             prev[n] = curr
+            dist[n] = dist[curr] + 1
+            manhatten = abs(obj[0] - n[0]) + abs(obj[1] - n[1])
+            boundary.put((manhatten + dist[n], n))
     path = []
     while end:
         path = [end] + path
