@@ -12,6 +12,7 @@ This is the main entry point for MP1. You should only modify code
 within this file -- the unrevised staff files will be used for all other
 files and classes when code is run, so be careful to not modify anything else.
 """
+from queue import PriorityQueue
 # Search should return the path.
 # The path should be a list of tuples in the form (row, col) that correspond
 # to the positions of the path taken by your search algorithm.
@@ -80,7 +81,32 @@ def astar(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     # TODO: Write your code here
-    return []
+    boundary = PriorityQueue()
+    prev = {}
+    start = maze.getStart()
+    prev[start] = None
+    objs = maze.getObjectives()
+    obj = objs[0]
+    manhatten = abs(obj[0] - start[0]) + abs(obj[1] - start[1])
+    boundary.put((manhatten, start))
+    end = None
+    while not boundary.empty():
+        value, curr = boundary.get()
+        if maze.isObjective(curr[0], curr[1]):
+            end = curr
+            break
+        neighbors = maze.getNeighbors(curr[0], curr[1])
+        for n in neighbors:
+            if n in prev:
+                continue
+            manhatten = abs(obj[0] - n[0]) + abs(obj[1] - n[1])
+            boundary.put((manhatten, n))
+            prev[n] = curr
+    path = []
+    while end:
+        path = [end] + path
+        end = prev[end]
+    return path
 
 def astar_corner(maze):
     """
