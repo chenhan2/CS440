@@ -30,8 +30,7 @@ class Application:
         self.displaySurface = None
         self.scale = scale
         self.fps = fps
-        # self.windowTitle = "CS440 MP1: "
-        self.windowTitle = "C:/Users/AW/Desktop/CS440/CODE/MP1/"
+        self.windowTitle = "CS440 MP1: "
         self.__human = human
         self.alt_color = alt_color
 
@@ -189,7 +188,7 @@ class Application:
     # Draws start location of path
     def drawStart(self):
         row,col = self.maze.getStart()
-        pygame.draw.rect(self.displaySurface, (0,0,255), (col * self.blockSizeX + self.blockSizeX/4, row * self.blockSizeY + self.blockSizeY/4, self.blockSizeX * 0.5, self.blockSizeY * 0.5), 0)
+        pygame.draw.rect(self.displaySurface, (0,0,255), (int(col * self.blockSizeX + self.blockSizeX/4), int(row * self.blockSizeY + self.blockSizeY/4), int(self.blockSizeX * 0.5), int(self.blockSizeY * 0.5)), 0)
 
     # Draws the full maze to the display context
     def drawMaze(self):
@@ -205,7 +204,7 @@ if __name__ == "__main__":
     parser.add_argument('filename',
                         help='path to maze file [REQUIRED]')
     parser.add_argument('--method', dest="search", type=str, default = "bfs",
-                        choices = ["bfs", "astar_corner", "astar", "extra", "astar_multi"],
+                        choices = ["bfs", "astar_corner", "astar", "fast", "astar_multi"],
                         help='search method - default bfs')
     parser.add_argument('--scale', dest="scale", type=int, default = 20,
                         help='scale - default: 20')
