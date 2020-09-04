@@ -175,7 +175,6 @@ class Topology:
         dist = math.inf
         for obj in objs:
             dist = min(dist, self.getCost(start, obj))
-        # print(start, objs, dist, cost)
         return cost + dist
 
 
@@ -222,7 +221,34 @@ def astar_multi(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     # TODO: Write your code here
-    return astar_corner(maze)
+    path = []
+    boundary = PriorityQueue()
+    start = maze.getStart()
+    objs = maze.getObjectives()
+    prev = {}
+    dist = {}
+    prev[start] = None
+    dist[start] = 0
+    manhatten = abs(obj[0] - start[0]) + abs(obj[1] - start[1])
+    boundary.put((manhatten + 0, start))
+    end = None
+    while not boundary.empty():
+        value, curr = boundary.get()
+        if curr == obj:
+            end = curr
+            break
+        neighbors = maze.getNeighbors(curr[0], curr[1])
+        for n in neighbors:
+            if n in prev:
+                continue
+            prev[n] = curr
+            dist[n] = dist[curr] + 1
+            manhatten = abs(obj[0] - n[0]) + abs(obj[1] - n[1])
+            boundary.put((manhatten + dist[n], n))
+    while end:
+        self.path = [end] + self.path
+        end = prev[end]
+    return
 
 
 def fast(maze):
