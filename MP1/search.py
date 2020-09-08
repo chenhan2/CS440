@@ -288,7 +288,7 @@ def astar_multi(maze):
     objs = maze.getObjectives()
     dist = preAstar(maze, [start] + objs)
     boundary = PriorityQueue()
-    startState = (start, tuple(), tuple(objs))
+    startState = (start, tuple(objs))
     time = 0
     MST = {tuple(objs):MST_multi(maze, objs, dist)}
     prev = {startState:None}
@@ -297,21 +297,18 @@ def astar_multi(maze):
     endState = None
     while boundary:
         # print(time)
+        # print()
         _, _, currState = boundary.get()
-        if not currState[2]:
+        # endState = currState
+        if not currState[1]:
             endState = currState
             break
-        curr, visited, remaining = currState
+        curr, remaining = currState
         remaining = list(remaining)
-        visited = list(visited)
         for next in remaining:
             tmpRemaining = remaining.copy()
             tmpRemaining.remove(next)
-            tmpVisited = visited.copy()
-            tmpVisited.append(next)
-            tmpVisited = sorted(tmpVisited, key = lambda x:x[1])
-            tmpVisited = sorted(tmpVisited, key = lambda x:x[0])
-            nextState = (next, tuple(tmpVisited), tuple(tmpRemaining))
+            nextState = (next, tuple(tmpRemaining))
             if nextState in prev:
                 if prev[nextState] in cost and cost[prev[nextState]] > cost[currState]:
                     pass
@@ -323,12 +320,12 @@ def astar_multi(maze):
                 MST[tuple(tmpRemaining)] = MST_multi(maze, tmpRemaining, dist)
             time += 1
             boundary.put((cost[nextState] + dist_nearest(next, tmpRemaining, dist) + MST[tuple(tmpRemaining)], time, nextState))
+            if curr == start:
+                print(curr, next, cost[nextState] + dist_nearest(next, tmpRemaining, dist) + MST[tuple(tmpRemaining)])
     path = []
     while prev[endState]:
-        # print(endState)
         node2 = endState[0]
         node1 = prev[endState][0]
-        print(node1)
         tmpAstar = SimpleAstar(maze, node1, node2)
         path = tmpAstar.getPath()[1:] + path
         endState = prev[endState]
