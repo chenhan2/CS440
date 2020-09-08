@@ -224,56 +224,6 @@ def astar_corner(maze):
         path += tour[1:]
     return path
 
-def astar_multi0(maze):
-    """
-    Runs A star for part 3 of the assignment in the case where there are
-    multiple objectives.
-
-    @param maze: The maze to execute the search on.
-
-    @return path: a list of tuples containing the coordinates of each state in the computed path
-    """
-    # TODO: Write your code here
-    start = maze.getStart()
-    objs = maze.getObjectives()
-    order = [start]
-    MST_cache = {}
-    dist = preAstar(maze, [start] + objs)
-    curr = start
-    while objs:
-        next, value = None, math.inf
-        if len(objs) >= 2:
-            for obj in objs:
-                tmp = objs.copy()
-                tmp.remove(obj)
-                tmp = tuple(tmp)
-                if tmp not in MST_cache:
-                    MST_cache[tmp] = MST_multi(maze, list(tmp), dist)
-                cost = dist[(curr, obj)]
-                # print(curr, obj, cost)
-                distance = math.inf
-                for node in tmp:
-                    distance = min(distance, dist[(node, obj)])
-                # print(obj, cost, distance, MST_cache[tmp])
-                if cost + distance + MST_cache[tmp]< value:
-                    value = distance + MST_cache[tmp] + cost
-                    next = obj
-                del tmp
-            curr = next
-            order.append(next)
-            objs.remove(next)
-        else:
-            order.append(objs[0])
-            objs.clear()
-        # print()
-    path = [start]
-    print(order)
-    for i in range(0, len(order) - 1):
-        tmp = SimpleAstar(maze, order[i], order[i + 1])
-        newPath = tmp.getPath()
-        path += newPath[1:]
-    return path
-
 def astar_multi(maze):
     """
     Runs A star for part 3 of the assignment in the case where there are
@@ -296,32 +246,29 @@ def astar_multi(maze):
     boundary.put((cost[startState] + dist_nearest(start, objs, dist) + MST[tuple(objs)], time, startState))
     endState = None
     while boundary:
-        # print(time)
-        # print()
         _, _, currState = boundary.get()
-        # endState = currState
         if not currState[1]:
             endState = currState
             break
         curr, remaining = currState
         remaining = list(remaining)
-        for next in remaining:
+        neighbors = maze.getNeighbors(curr[0], curr[1])
+        for n in neighbors:
             tmpRemaining = remaining.copy()
-            tmpRemaining.remove(next)
-            nextState = (next, tuple(tmpRemaining))
+            if n in tmpRemaining:
+                tmpRemaining.remove(n)
+            nextState = (n, tuple(tmpRemaining))
             if nextState in prev:
                 if prev[nextState] in cost and cost[prev[nextState]] > cost[currState]:
                     pass
                 else:
                     continue
             prev[nextState] = currState
-            cost[nextState] = cost[currState] + dist[(curr, next)]
+            cost[nextState] = cost[currState] + 1
             if tuple(tmpRemaining) not in MST:
                 MST[tuple(tmpRemaining)] = MST_multi(maze, tmpRemaining, dist)
             time += 1
-            boundary.put((cost[nextState] + dist_nearest(next, tmpRemaining, dist) + MST[tuple(tmpRemaining)], time, nextState))
-            if curr == start:
-                print(curr, next, cost[nextState] + dist_nearest(next, tmpRemaining, dist) + MST[tuple(tmpRemaining)])
+            boundary.put((cost[nextState] + dist_nearest(n, tmpRemaining, dist) + MST[tuple(tmpRemaining)], time, nextState))
     path = []
     while prev[endState]:
         node2 = endState[0]
@@ -344,7 +291,7 @@ def preAstar(maze, objs):
 def dist_nearest(start, objs, dist):
     distance = math.inf
     for obj in objs:
-        distance = min(distance, dist[(start, obj)])
+        distance = min(distance, manhatten(start, obj))
     return distance
 
 def MST_multi(maze, objs, dist):
@@ -379,4 +326,46 @@ def fast(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     # TODO: Write your code here
-    return []
+    start = maze.getStart()
+    objs = maze.getObjectives()
+    dist = preAstar(maze, [start] + objs)
+    boundary = PriorityQueue()
+    startState = (start, tuple(objs))
+    time = 0
+    MST = {tuple(objs):MST_multi(maze, objs, dist)}
+    prev = {startState:None}
+    cost = {startState:0}
+    boundary.put((cost[startState] + dist_nearest(start, objs, dist) + 2 * MST[tuple(objs)], time, startState))
+    endState = None
+    while boundary:
+        _, _, currState = boundary.get()
+        if not currState[1]:
+            endState = currState
+            break
+        curr, remaining = currState
+        remaining = list(remaining)
+        neighbors = maze.getNeighbors(curr[0], curr[1])
+        for n in neighbors:
+            tmpRemaining = remaining.copy()
+            if n in tmpRemaining:
+                tmpRemaining.remove(n)
+            nextState = (n, tuple(tmpRemaining))
+            if nextState in prev:
+                if prev[nextState] in cost and cost[prev[nextState]] > cost[currState]:
+                    pass
+                else:
+                    continue
+            prev[nextState] = currState
+            cost[nextState] = cost[currState] + 1
+            if tuple(tmpRemaining) not in MST:
+                MST[tuple(tmpRemaining)] = MST_multi(maze, tmpRemaining, dist)
+            time += 1
+            boundary.put((cost[nextState] + dist_nearest(n, tmpRemaining, dist) + 2 * MST[tuple(tmpRemaining)], time, nextState))
+    path = []
+    while prev[endState]:
+        node2 = endState[0]
+        node1 = prev[endState][0]
+        tmpAstar = SimpleAstar(maze, node1, node2)
+        path = tmpAstar.getPath()[1:] + path
+        endState = prev[endState]
+    return [start] + path
