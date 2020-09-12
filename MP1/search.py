@@ -329,43 +329,24 @@ def fast(maze):
     start = maze.getStart()
     objs = maze.getObjectives()
     dist = preAstar(maze, [start] + objs)
-    boundary = PriorityQueue()
-    startState = (start, tuple(objs))
-    time = 0
-    MST = {tuple(objs):MST_multi(maze, objs, dist)}
-    prev = {startState:None}
-    cost = {startState:0}
-    boundary.put((cost[startState] + dist_nearest(start, objs, dist) + 2 * MST[tuple(objs)], time, startState))
-    endState = None
-    while boundary:
-        _, _, currState = boundary.get()
-        if not currState[1]:
-            endState = currState
-            break
-        curr, remaining = currState
-        remaining = list(remaining)
-        neighbors = maze.getNeighbors(curr[0], curr[1])
-        for n in neighbors:
-            tmpRemaining = remaining.copy()
-            if n in tmpRemaining:
-                tmpRemaining.remove(n)
-            nextState = (n, tuple(tmpRemaining))
-            if nextState in prev:
-                if prev[nextState] in cost and cost[prev[nextState]] > cost[currState]:
-                    pass
-                else:
-                    continue
-            prev[nextState] = currState
-            cost[nextState] = cost[currState] + 1
-            if tuple(tmpRemaining) not in MST:
-                MST[tuple(tmpRemaining)] = MST_multi(maze, tmpRemaining, dist)
-            time += 1
-            boundary.put((cost[nextState] + dist_nearest(n, tmpRemaining, dist) + 2 * MST[tuple(tmpRemaining)], time, nextState))
+    order = [start]
+    curr = start
+    while objs:
+        next = findNearest(dist, curr, objs)
+        order.append(next)
+        objs.remove(next)
+        curr = next
     path = []
-    while prev[endState]:
-        node2 = endState[0]
-        node1 = prev[endState][0]
-        tmpAstar = SimpleAstar(maze, node1, node2)
-        path = tmpAstar.getPath()[1:] + path
-        endState = prev[endState]
-    return [start] + path
+    for i in range(len(order) - 1):
+        tmpAstar = SimpleAstar(maze, order[i], order[i + 1])
+        path += tmpAstar.getPath()[1:]
+    return path
+
+def findNearest(dist, start, objs):
+    nearest = None
+    minDist = math.inf
+    for obj in objs:
+        if dist[(start, obj)] < minDist:
+            minDist = dist[(start, obj)]
+            nearest = obj
+    return nearest
