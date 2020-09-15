@@ -26,7 +26,7 @@ def computeCoordinate(start, length, angle):
         Return:
             End position (int,int):of the arm link, (x-coordinate, y-coordinate)
     """
-    return (floor(start[0] + length * math.cos(angle)), floor(start + length * math.sin(angle)))
+    return (int(start[0] + length * math.cos(angle / 180 * math.pi)), int(start[1] - length * math.sin(angle / 180 * math.pi)))
 
 def doesArmTouchObjects(armPosDist, objects, isGoal=False):
     """Determine whether the given arm links touch any obstacle or goal
@@ -40,12 +40,27 @@ def doesArmTouchObjects(armPosDist, objects, isGoal=False):
         Return:
             True if touched. False if not.
     """
-    start, end, padding = armPosDist
-    if isGoal:
-        padding = 0
-    obj, radius = objects
-    dist = ((obj[0] - start[0])(start[1] - end[1]) - (start[0] - end[0])(obj[1] - start[1])) / math.sqrt((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2)
-    return dist <= radius + padding
+    for armPos in armPosDist:
+        for object in objects:
+            start, end, padding = armPos
+            if isGoal:
+                padding = 0
+            obj_x, obj_y, radius = object
+            obj = (obj_x, obj_y)
+            lineDist = distance(start, end)
+            if lineDist == 0:
+                dist = distance(obj, start)
+            else:
+                t = ((obj[0] - start[0]) * (end[0] - start[0]) + (obj[1] - start[1]) * (end[1] - start[1])) / lineDist
+                t = max(0, min(1, t))
+                dist = distance(obj, (start[0] + t * (end[0] - start[0]), start[1] + t * (end[1] - start[1])))
+            # dist = ((obj_x - start[0]) * (start[1] - end[1]) - (start[0] - end[0]) * (obj_y - start[1])) / math.sqrt((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2)
+            if dist <= radius + padding:
+                return True
+    return False
+
+def distance(x, y):
+    return math.sqrt((x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2)
 
 def doesArmTipTouchGoals(armEnd, goals):
     """Determine whether the given arm tick touch goals
@@ -72,8 +87,10 @@ def isArmWithinWindow(armPos, window):
         Return:
             True if all parts are in the window. False if not.
     """
-    if armPos[0] < 0 or armPos[0] >= window[0] or armPos[1] < 0 or armPos[1] >= window[1]:
-        return False
+    for arm in armPos:
+        for vertex in arm:
+            if vertex[0] < 0 or vertex[0] >= window[0] or vertex[1] < 0 or vertex[1] >= window[1]:
+                return False
     return True
 
 

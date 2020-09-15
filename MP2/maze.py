@@ -4,8 +4,8 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to the University of Illinois at Urbana-Champaign
-# 
-# Created by Michael Abir (abir2@illinois.edu) and 
+#
+# Created by Michael Abir (abir2@illinois.edu) and
 #            Jongdeog Lee (jlee700@illinois.edu) on 09/12/2018
 """
 This file contains the Maze class, which reads in a maze file and creates
@@ -18,24 +18,24 @@ from util import *
 
 class Maze:
     # Initializes the Maze object by reading the maze from a file
-    def __init__(self, input_map, offsets, granularity):        
+    def __init__(self, input_map, offsets, granularity):
         self.__start = None
-        self.__objective = []        
+        self.__objective = []
 
         self.offsets = offsets
         self.granularity = granularity
-    
-        self.__dimensions = [len(input_map), len(input_map[0])]        
+
+        self.__dimensions = [len(input_map), len(input_map[0])]
         self.__map = input_map
         for x in range(self.__dimensions[ALPHA]):
-            for y in range(self.__dimensions[BETA]):                
-                if self.__map[x][y] == START_CHAR:                    
+            for y in range(self.__dimensions[BETA]):
+                if self.__map[x][y] == START_CHAR:
                     self.__start = idxToAngle((x, y), self.offsets, granularity)
                 elif self.__map[x][y] == OBJECTIVE_CHAR:
                     self.__objective.append(idxToAngle((x, y), self.offsets, granularity))
 
         if not self.__start:
-            print("Maze has no start")            
+            print("Maze has no start")
             raise SystemExit
 
         if not self.__objective:
@@ -78,14 +78,14 @@ class Maze:
         return x >= 0 and x < self.getDimensions()[ALPHA] and \
                y >= 0 and y < self.getDimensions()[BETA] and \
                not self.isWall(alpha, beta)
-        
+
     # Returns list of neighboing squares that can be moved to from the given beta,gamma
     def getNeighbors(self, alpha, beta):
         possibleNeighbors = [
             (alpha + self.granularity, beta),
             (alpha - self.granularity, beta),
             (alpha, beta + self.granularity),
-            (alpha, beta - self.granularity)            
+            (alpha, beta - self.granularity)
         ]
         neighbors = []
         for a, b in possibleNeighbors:
@@ -93,7 +93,7 @@ class Maze:
                 neighbors.append((a,b))
         return neighbors
 
-    def saveToFile(self, filename):        
+    def saveToFile(self, filename):
         outputMap = ""
         for beta in range(self.__dimensions[1]):
             for alpha in range(self.__dimensions[0]):
@@ -104,7 +104,7 @@ class Maze:
             f.write(outputMap)
 
         return True
-            
+
 
     def isValidPath(self, path):
         # First, check whether it moves single hop
