@@ -51,7 +51,7 @@ def doesArmTouchObjects(armPosDist, objects, isGoal=False):
             if lineDist == 0:
                 dist = distance(obj, start)
             else:
-                t = ((obj[0] - start[0]) * (end[0] - start[0]) + (obj[1] - start[1]) * (end[1] - start[1])) / lineDist
+                t = ((obj[0] - start[0]) * (end[0] - start[0]) + (obj[1] - start[1]) * (end[1] - start[1])) / lineDist ** 2
                 t = max(0, min(1, t))
                 dist = distance(obj, (start[0] + t * (end[0] - start[0]), start[1] + t * (end[1] - start[1])))
             # dist = ((obj_x - start[0]) * (start[1] - end[1]) - (start[0] - end[0]) * (obj_y - start[1])) / math.sqrt((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2)

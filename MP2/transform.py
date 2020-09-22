@@ -37,13 +37,12 @@ def transformToMaze(arm, goals, obstacles, window, granularity):
     limit = arm.getArmLimit()
     dim_x = int((max(limit[0]) - min(limit[0])) / granularity + 1)
     dim_y = int((max(limit[1]) - min(limit[1])) / granularity + 1)
-    map = [[" "] * dim_x for _ in range(dim_y)]
-    start = arm.getArmAngle()
-    # print(start)
-    map[start[1]][start[0]] = 'P'
-    for j in range(dim_x):
-        for i in range(dim_y):
-            alpha, beta = idxToAngle([j, i], [min(limit[0]), min(limit[1])], granularity)
+    map = [[" "] * dim_y for _ in range(dim_x)]
+    startIdx = angleToIdx(arm.getArmAngle(), [min(limit[0]), min(limit[1])], granularity)
+    map[startIdx[0]][startIdx[1]] = 'P'
+    for i in range(dim_x):
+        for j in range(dim_y):
+            alpha, beta = idxToAngle([i, j], [min(limit[0]), min(limit[1])], granularity)
             arm.setArmAngle((alpha, beta))
             if doesArmTouchObjects(arm.getArmPosDist(), obstacles, False):
                 map[i][j] = '%'
@@ -54,6 +53,6 @@ def transformToMaze(arm, goals, obstacles, window, granularity):
             elif doesArmTipTouchGoals(arm.getEnd(), goals):
                 map[i][j] = '.'
     # map[start[1]][start[0]] = 'P'
-    # print(map)
+    # print(len(map), len(map[0]))
     myMaze = Maze(map, (min(limit[0]), min(limit[1])), granularity)
     return myMaze
