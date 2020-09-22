@@ -87,9 +87,11 @@ def isArmWithinWindow(armPos, window):
         Return:
             True if all parts are in the window. False if not.
     """
+    # print(window)
     for arm in armPos:
+        # print(arm, window)
         for vertex in arm:
-            if vertex[0] < 0 or vertex[0] >= window[0] or vertex[1] < 0 or vertex[1] >= window[1]:
+            if vertex[0] < 0 or vertex[0] > window[0] or vertex[1] < 0 or vertex[1] > window[1]:
                 return False
     return True
 

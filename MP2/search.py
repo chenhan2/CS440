@@ -30,6 +30,25 @@ def bfs(maze):
     # Write your code here
     """
     This function returns optimal path in a list, which contains start and objective.
-    If no path found, return None. 
+    If no path found, return None.
     """
-    return []
+    queue = [maze.getStart()]
+    prev = {queue[0]:None}
+    end = None
+    while queue:
+        curr = queue.pop(0)
+        if maze.isObjective(curr[0], curr[1]):
+            end = curr
+            break
+        neighbors = maze.getNeighbors(curr[0], curr[1])
+        for n in neighbors:
+            if n not in prev:
+                prev[n] = curr
+                queue.append(n)
+    if not end:
+        return None
+    path = []
+    while end:
+        path = [end] + path
+        end = prev[end]
+    return path
