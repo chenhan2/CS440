@@ -37,10 +37,10 @@ def bfs(maze):
     end = None
     while queue:
         curr = queue.pop(0)
-        if maze.isObjective(curr[0], curr[1]):
+        if maze.isObjective(curr[0], curr[1], curr[2]):
             end = curr
             break
-        neighbors = maze.getNeighbors(curr[0], curr[1])
+        neighbors = maze.getNeighbors(curr[0], curr[1], curr[2])
         for n in neighbors:
             if n not in prev:
                 prev[n] = curr

@@ -35,24 +35,40 @@ def transformToMaze(arm, goals, obstacles, window, granularity):
 
     """
     limit = arm.getArmLimit()
+    numLink = len(limit)
+    while len(limit) < 3:
+        limit.append((0, 0))
     dim_x = int((max(limit[0]) - min(limit[0])) / granularity + 1)
     dim_y = int((max(limit[1]) - min(limit[1])) / granularity + 1)
-    map = [[" "] * dim_y for _ in range(dim_x)]
-    startIdx = angleToIdx(arm.getArmAngle(), [min(limit[0]), min(limit[1])], granularity)
+    dim_z = int((max(limit[2]) - min(limit[2])) / granularity + 1)
+    map = [[[" "] * dim_z for _ in range(dim_y)] for k in range(dim_x)]
+    if numLink == 1:
+        startIdx = (angleToIdx(arm.getArmAngle(), [min(limit[0])], granularity)[0], 0, 0)
+    elif numLink == 2:
+        startIdx = (angleToIdx(arm.getArmAngle(), [min(limit[0]), min(limit[1])], granularity)[0], angleToIdx(arm.getArmAngle(), [min(limit[0]), min(limit[1])], granularity)[1], 0)
+    else:
+        startIdx = angleToIdx(arm.getArmAngle(), [min(limit[0]), min(limit[1]), min(limit[2])], granularity)
     # map[startIdx[0]][startIdx[1]] = 'P'
     for i in range(dim_x):
         for j in range(dim_y):
-            alpha, beta = idxToAngle([i, j], [min(limit[0]), min(limit[1])], granularity)
-            arm.setArmAngle((alpha, beta))
-            if doesArmTipTouchGoals(arm.getEnd(), goals):
-                map[i][j] = '.'
-            elif doesArmTouchObjects(arm.getArmPosDist(), obstacles, False):
-                map[i][j] = '%'
-            elif doesArmTouchObjects(arm.getArmPosDist(), goals, True):
-                map[i][j] = '%'
-            elif not isArmWithinWindow(arm.getArmPos(), window):
-                map[i][j] = '%'
-    map[startIdx[0]][startIdx[1]] = 'P'
+            for k in range(dim_z):
+                alpha, beta, gamma = idxToAngle([i, j, k], [min(limit[0]), min(limit[1]), min(limit[2])], granularity)
+                # print(alpha, beta, gamma)
+                if numLink == 1:
+                    arm.setArmAngle((alpha, ))
+                elif numLink == 2:
+                    arm.setArmAngle((alpha, beta))
+                else:
+                    arm.setArmAngle((alpha, beta, gamma))
+                if doesArmTipTouchGoals(arm.getEnd(), goals):
+                    map[i][j][k] = '.'
+                elif doesArmTouchObjects(arm.getArmPosDist(), obstacles, False):
+                    map[i][j][k] = '%'
+                elif doesArmTouchObjects(arm.getArmPosDist(), goals, True):
+                    map[i][j][k] = '%'
+                elif not isArmWithinWindow(arm.getArmPos(), window):
+                    map[i][j][k] = '%'
+    map[startIdx[0]][startIdx[1]][startIdx[2]] = 'P'
     # print(len(map), len(map[0]))
-    myMaze = Maze(map, (min(limit[0]), min(limit[1])), granularity)
+    myMaze = Maze(map, (min(limit[0]), min(limit[1]), min(limit[2])), granularity)
     return myMaze
