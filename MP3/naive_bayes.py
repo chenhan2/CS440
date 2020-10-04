@@ -6,6 +6,8 @@
 # attribution to the University of Illinois at Urbana-Champaign
 #
 # Created by Justin Lizama (jlizama2@illinois.edu) on 09/28/2018
+from collections import defaultdict
+import math
 
 """
 This is the main entry point for MP3. You should only modify code
@@ -32,7 +34,39 @@ def naiveBayes(train_set, train_labels, dev_set, smoothing_parameter=1.0, pos_pr
     """
     # TODO: Write your code here
     # return predicted labels of development set
-    return []
+    logProb = {0: defaultdict(float), 1: defaultdict(float)}
+    totalWords = {0: 0, 1: 0}
+    logProb[0]["UNK"] = 0.0
+    logProb[1]["UNK"] = 0.0
+    for i, sen in enumerate(train_set):
+        for word in sen:
+            logProb[train_labels[i]][word] += 1.0
+        totalWords[train_labels[i]] += len(sen)
+    for i in [0, 1]:
+        for word in logProb[i]:
+            logProb[i][word] = math.log(lobProb[i][word] + 1) - math.log(totalWords[i] + len(logProb[i]))
+    prior = {}
+    prior[1] = math.sum(train_labels == 1) * 1.0 / len(train_labels)
+    prior[0] = 1 - prior[1]
+
+    dev_labels = []
+    for sen in dev_set:
+        prob_Pos = math.log(prior[1])
+        prob_Neg = math.log(prior[0])
+        for word in sen:
+            if word in logProb[1]:
+                prob_Pos += logProb[1][word]
+            else:
+                prob_pos += logProb[1]["UNK"]
+            if word in logProb[0]:
+                prob_Neg += logProb[0][word]
+            else:
+                prob_pos += logProb[1]["UNK"]
+        if prob_Pos > prob_Neg:
+            dev_labels.append(1)
+        else:
+            dev_labels.append(0)
+    return dev_labels
 
 def bigramBayes(train_set, train_labels, dev_set, unigram_smoothing_parameter=1.0, bigram_smoothing_parameter=1.0, bigram_lambda=0.5,pos_prior=0.8):
     """
