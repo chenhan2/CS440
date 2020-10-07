@@ -99,7 +99,7 @@ def calculateUnigramLogProb(sen, pos_prior, logProb):
             logPost_Neg += logProb[0]["UNK"]
     return logPost_Pos, logPost_Neg
 
-def bigramBayes(train_set, train_labels, dev_set, unigram_smoothing_parameter=0.08, bigram_smoothing_parameter=0.4, bigram_lambda=0.0001,pos_prior=0.8):
+def bigramBayes(train_set, train_labels, dev_set, unigram_smoothing_parameter=0.1, bigram_smoothing_parameter=1.0 / 2 ** 2, bigram_lambda=0.1,pos_prior=0.8):
     """
     train_set - List of list of words corresponding with each movie review
     example: suppose I had two reviews 'like this movie' and 'i fall asleep' in my training set
