@@ -99,7 +99,7 @@ def calculateUnigramLogProb(sen, pos_prior, logProb):
             logPost_Neg += logProb[0]["UNK"]
     return logPost_Pos, logPost_Neg
 
-def bigramBayes(train_set, train_labels, dev_set, unigram_smoothing_parameter=0.05, bigram_smoothing_parameter=0.001, bigram_lambda=0.01,pos_prior=0.8):
+def bigramBayes(train_set, train_labels, dev_set, unigram_smoothing_parameter=1.0 / 2**4, bigram_smoothing_parameter=1.0 / 2**4, bigram_lambda=0.01,pos_prior=0.8):
     """
     train_set - List of list of words corresponding with each movie review
     example: suppose I had two reviews 'like this movie' and 'i fall asleep' in my training set
@@ -148,12 +148,12 @@ def bigramBayes(train_set, train_labels, dev_set, unigram_smoothing_parameter=0.
 def buildBiGram(train_set, train_labels, smoothing_parameter):
     logProb = {0: defaultdict(float), 1: defaultdict(float)}
     totalWords = {0: 0, 1: 0}
-    vocab = {0: set(), 1: set()}
+    # vocab = {0: set(), 1: set()}
     for i, sen in enumerate(train_set):
         for j in range(len(sen) - 1):
-            vocab[train_labels[i]].add(sen[j])
+            # vocab[train_labels[i]].add(sen[j])
             logProb[train_labels[i]][(sen[j], sen[j + 1])] += 1.0
-        vocab[train_labels[i]].add(sen[-1])
+        # vocab[train_labels[i]].add(sen[-1])
         totalWords[train_labels[i]] += len(sen) - 1
     for i in [0, 1]:
         logProb[i][("UNK", "UNK")] = 0.0
@@ -181,7 +181,7 @@ def calculateBigramLogProb(sen, pos_prior, logProb, vocab):
         else:
             logPost_Pos += logProb[1][("UNK", "UNK")]
     for i in range(len(sen_neg) - 1):
-        if (sen_pos[i], sen_pos[i + 1]) in logProb[0]:
+        if (sen_neg[i], sen_neg[i + 1]) in logProb[0]:
             logPost_Neg += logProb[0][(sen_neg[i], sen_neg[i + 1])]
         else:
             logPost_Neg += logProb[0][("UNK", "UNK")]
