@@ -1,0 +1,1 @@
+He=PRON then=ADV launched=VERB campaign=NOUN .=PERIOD
