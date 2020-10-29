@@ -36,13 +36,59 @@ import numpy as np
 def trainPerceptron(train_set, train_labels, learning_rate, max_iter):
     # TODO: Write your code here
     # return the trained weight and bias parameters
+    train_set = np.array(train_set)
+    W = np.zeros(train_set.shape[1])
+    b = 0
+    for _ in range(max_iter):
+        for i in range(train_set.shape[0]):
+            y_hat = np.inner(W, train_set[i,:]) + b
+            if y_hat > 0:
+                y_hat = 1
+            else:
+                y_hat = -1
+            y = train_labels[i]
+            if y > 0:
+                y = 1
+            else:
+                y = -1
+            if y != y_hat:
+                W += learning_rate * y * train_set[i,:]
+                b += learning_rate * y
     return W, b
 
 def classifyPerceptron(train_set, train_labels, dev_set, learning_rate, max_iter):
     # TODO: Write your code here
     # Train perceptron model and return predicted labels of development set
-    return []
+    W, b = trainPerceptron(train_set, train_labels, learning_rate, max_iter)
+    print(W)
+    dev_set = np.array(dev_set)
+    result = []
+    for i in range(dev_set.shape[0]):
+        y = np.inner(W, dev_set[i,:]) + b
+        if y > 0:
+            result.append(1)
+        else:
+            result.append(0)
+    return result
 
 def classifyKNN(train_set, train_labels, dev_set, k):
     # TODO: Write your code here
-    return []
+    result = []
+    for x in dev_set:
+        neighbors = {}
+        distances = []
+        for i, y in enumerate(train_set):
+            dist = np.linalg.norm(x - y)
+            neighbors[dist] = i
+            distances.append(dist)
+        distances = sorted(distances)
+        distances = distances[:k]
+        avg = 0.0
+        for dist in distances:
+            avg += train_labels[neighbors[dist]]
+        avg = avg / k
+        if avg > 0.5:
+            result.append(1)
+        else:
+            result.append(0)
+    return result
