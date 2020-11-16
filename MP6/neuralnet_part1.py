@@ -14,6 +14,10 @@ files and classes when code is run, so be careful to not modify anything else.
 
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from math import ceil
 
 
 class NeuralNet(torch.nn.Module):
@@ -37,9 +41,12 @@ class NeuralNet(torch.nn.Module):
         """
         super(NeuralNet, self).__init__()
         self.loss_fn = loss_fn
-
-
-
+        self.model = nn.Sequential(
+            nn.Linear(in_size, 32),
+            nn.ReLU(),
+            nn.Linear(32, out_size)
+        )
+        self.optimizer = optim.SGD(self.model.parameters(), lrate)
 
     def forward(self, x):
         """ A forward pass of your neural net (evaluates f(x)).
@@ -48,7 +55,7 @@ class NeuralNet(torch.nn.Module):
 
         @return y: an (N, out_size) torch tensor of output from the network
         """
-        return torch.ones(x.shape[0], 1)
+        return self.model(x)
 
     def step(self, x,y):
         """
@@ -57,7 +64,12 @@ class NeuralNet(torch.nn.Module):
         @param y: an (N,) torch tensor
         @return L: total empirical risk (mean of losses) at this time step as a float
         """
-        return 0.0
+        yhat = self.forward(x)
+        loss = self.loss_fn(yhat, y)
+        loss.backward()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
+        return loss.detach().cpu().numpy()
 
 
 def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
@@ -78,4 +90,24 @@ def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
 
     # NOTE: This must work for arbitrary M and N
     """
-    return [],[],None
+    mu = torch.mean(train_set)
+    sigma = torch.std(train_set)
+    train_set = (train_set - mu) / sigma
+
+    mu = torch.mean(dev_set)
+    sigma = torch.std(dev_set)
+    dev_set = (dev_set - mu) / sigma
+
+    net = NeuralNet(0.01, nn.CrossEntropyLoss(), 3072, 2)
+
+    losses = []
+    num_batch = ceil(1.0 * len(train_set) / batch_size)
+    for epoch in range(n_iter):
+        tmp_loss = []
+        for b in range(num_batch):
+            x_batch, y_batch = train_set[batch_size * b : min(batch_size * (b + 1), len(train_set)),], train_labels[batch_size * b : min(batch_size * (b + 1), len(train_labels)),]
+            loss = net.step(x_batch, y_batch)
+            tmp_loss.append(loss)
+        losses.append(np.mean(tmp_loss))
+    yhats = np.argmax(net.forward(dev_set).detach().cpu().numpy(), axis = 1)
+    return losses, yhats, net
