@@ -46,7 +46,7 @@ class NeuralNet(torch.nn.Module):
             nn.ReLU(),
             nn.Linear(32, out_size)
         )
-        self.optimizer = optim.SGD(self.model.parameters(), lrate)
+        self.optimizer = optim.SGD(self.model.parameters(), lrate, weight_decay=0.01)
 
     def forward(self, x):
         """ A forward pass of your neural net (evaluates f(x)).
@@ -107,7 +107,7 @@ def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
         for b in range(num_batch):
             x_batch, y_batch = train_set[batch_size * b : min(batch_size * (b + 1), len(train_set)),], train_labels[batch_size * b : min(batch_size * (b + 1), len(train_labels)),]
             loss = net.step(x_batch, y_batch)
-            tmp_loss.append(loss)
+            tmp_loss.append(loss * y_batch.shape[0])
         losses.append(np.mean(tmp_loss))
     yhats = np.argmax(net.forward(dev_set).detach().cpu().numpy(), axis = 1)
     return losses, yhats, net
