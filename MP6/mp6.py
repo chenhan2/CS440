@@ -59,7 +59,7 @@ if __name__ == "__main__":
                         help='the directory of the training data')
     parser.add_argument('--max_iter',dest="max_iter", type=int, default = 500,
                         help='Maximum iterations - default 500')
-    parser.add_argument('--part', dest="part", type=int, default=1,
+    parser.add_argument('--part', dest="part", type=int, default=2,
                         help='Part 1 or Part 2')
     parser.add_argument('--seed', dest="seed", type=int, default=42,
                         help='seed source for randomness')

@@ -14,6 +14,10 @@ files and classes when code is run, so be careful to not modify anything else.
 
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from math import ceil
 
 
 class NeuralNet(torch.nn.Module):
@@ -35,6 +39,21 @@ class NeuralNet(torch.nn.Module):
         """
         super(NeuralNet, self).__init__()
         self.loss_fn = loss_fn
+        self.model = nn.Sequential(
+            nn.Conv2d(3, 6, kernel_size = 3, padding = 1),
+            nn.MaxPool2d(2, stride = 2),
+            nn.Conv2d(6, 12, kernel_size = 3, padding = 1),
+            nn.MaxPool2d(2, stride = 2),
+            nn.Flatten(),
+            nn.Linear(768, 256),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(256, 32),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(32, out_size)
+        )
+        self.optimizer = optim.Adam(self.model.parameters(), lrate, weight_decay=0.0001)
 
 
     def forward(self, x):
@@ -44,7 +63,8 @@ class NeuralNet(torch.nn.Module):
 
         @return y: an (N, out_size) torch tensor of output from the network
         """
-        return torch.ones(x.shape[0], 1)
+        x = x.reshape(-1, 3, 32, 32)
+        return self.model(x)
 
     def step(self, x,y):
         """
@@ -53,7 +73,12 @@ class NeuralNet(torch.nn.Module):
         @param y: an (N,) torch tensor
         @return L: total empirical risk (mean of losses) at this time step as a float
         """
-        return 0.0
+        yhat = self.forward(x)
+        loss = self.loss_fn(yhat, y)
+        loss.backward()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
+        return loss.detach().cpu().numpy()
 
 
 
@@ -78,4 +103,27 @@ def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
     model's performance could be sensitive to the choice of learning_rate. We recommend trying different values in case
     your first choice does not seem to work well.
     """
-    return [],[],None
+    mu = torch.mean(train_set)
+    sigma = torch.std(train_set)
+    train_set = (train_set - mu) / sigma
+
+    mu = torch.mean(dev_set)
+    sigma = torch.std(dev_set)
+    dev_set = (dev_set - mu) / sigma
+
+    net = NeuralNet(0.01, nn.CrossEntropyLoss(), 3072, 2)
+
+    losses = []
+    num_batch = ceil(1.0 * len(train_set) / batch_size)
+    for epoch in range(n_iter // batch_size):
+        print("epoch:", epoch)
+        tmp_loss = []
+        for b in range(num_batch):
+            x_batch, y_batch = train_set[batch_size * b : min(batch_size * (b + 1), len(train_set)),], train_labels[batch_size * b : min(batch_size * (b + 1), len(train_labels)),]
+            loss = net.step(x_batch, y_batch)
+            tmp_loss.append(loss * y_batch.shape[0])
+        losses.append(np.mean(tmp_loss))
+        # print(np.mean(tmp_loss))
+    yhats = np.argmax(net.forward(dev_set).detach().cpu().numpy(), axis = 1)
+    # print(yhats)
+    return losses, yhats, net
