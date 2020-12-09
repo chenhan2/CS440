@@ -12,7 +12,7 @@ class Application:
         self.args = args
         self.env = SnakeEnv(args.snake_head_x, args.snake_head_y, args.food_x, args.food_y)
         self.agent = Agent(self.env.get_actions(), args.Ne, args.C, args.gamma)
-        
+
     def execute(self):
         if not self.args.human:
             if self.args.train_eps != 0:
@@ -29,6 +29,7 @@ class Application:
         start = time.time()
 
         for game in range(1, self.args.train_eps + 1):
+        # for game in range(1, 10):
             state = self.env.get_state()
             dead = False
             action = self.agent.act(state, 0, dead)
@@ -43,12 +44,12 @@ class Application:
 
                 action = self.agent.act(state, points, dead)
 
-    
+
             points = self.env.get_points()
             self.points_results.append(points)
             if game % self.args.window == 0:
                 print(
-                    "Games:", len(self.points_results) - window, "-", len(self.points_results), 
+                    "Games:", len(self.points_results) - window, "-", len(self.points_results),
                     "Points (Average:", sum(self.points_results[-window:])/window,
                     "Max:", max(self.points_results[-window:]),
                     "Min:", min(self.points_results[-window:]),")",
@@ -130,8 +131,8 @@ class Application:
             if event.type == pygame.QUIT:
                 return True
         return False
-                
-            
+
+
 def main():
     parser = argparse.ArgumentParser(description='CS440 MP4 Snake')
 
